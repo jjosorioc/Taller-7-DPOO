@@ -1,87 +1,209 @@
 package uniandes.cupi2.pruebas;
 
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Assertions.*;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+
+
 
 import uniandes.cupi2.almacen.mundo.AlmacenException;
 import uniandes.cupi2.almacen.mundo.Categoria;
 import uniandes.cupi2.almacen.mundo.NodoAlmacen;
+import uniandes.cupi2.almacen.mundo.Producto;
 
 class PruebasCategoria {
 	
+
 	private Categoria categoria;
-	public Categoria nuevaCategoria;
+
 	
 	@BeforeEach
-	public void setup() throws AlmacenException
+	public void setup() throws AlmacenException, IOException
 	{
-		categoria = new Categoria ("Categoria", "Categoria");
-		nuevaCategoria = new Categoria ("Categoria1","Categoria1");
-		categoria.agregarNodo(categoria.darIdentificador(),nuevaCategoria);
+		
+		BufferedReader in = new BufferedReader( new FileReader( "./data/datos.txt" ) );
+        categoria = new Categoria( in.readLine( ), in );
+		//categoria.agregarNodo(categoria.darIdentificador(),nuevaCategoria);
+	}
+	
+	@Test
+	public void testCrearCategoria () {
+		
+		Categoria nuevaCategoria = new Categoria("Categoria1","Categoria1");
+		assertNotNull(nuevaCategoria.darIdentificador());
+		assertNotNull(nuevaCategoria.darNombre());
+	}
+	
+	
+	@ParameterizedTest
+	@ValueSource(strings = {"./data/datos.txt","./data/datoserroneos.txt"})
+	public void testCargarCategorias(String archivo) throws AlmacenException, IOException {
+		
+		if (archivo.equals("./data/datos.txt"))
+		{		
+			BufferedReader in = new BufferedReader( new FileReader( "./data/datos.txt" ) );
+			categoria = new Categoria( in.readLine( ), in );
+		
+			assertNotNull(categoria);
+		}
+		
+		else
+		{
+
+		    Exception exception = assertThrows(AlmacenException.class, () -> {
+		    	BufferedReader in = new BufferedReader( new FileReader( "./data/datoserroneos.txt" ) );
+		        categoria = new Categoria( in.readLine( ), in );
+		    });
+		}
+		
+		
+	}
+	
+	@ParameterizedTest
+	@ValueSource(strings= {"Categoria","Marca"})
+	public void testAgregarNodo1(String tipo) throws AlmacenException {
+		
+		categoria.agregarNodo("1",tipo,"Nuevo","Nuevo");
+		assertEquals(categoria.darNodos().size(),3);
+		
 	}
 
-	@Test
-	public void testAgregarNodo() {
+	@ParameterizedTest
+	@ValueSource(strings= {"Categoria1","1","11"})
+	public void testAgregarNodo(String nodo) throws AlmacenException {
 		
-		assertEquals(categoria.darNodos().size(),1);
+		Categoria nuevaCategoria = new Categoria("Categoria1","Categoria1");
+		
+		if (nodo.equals("Categoria1"))
+		{
+			categoria.agregarNodo("1",nuevaCategoria);
+			assertEquals(categoria.darNodos().size(),3);
+
+		}
+		else if (nodo.equals("1"))
+		{
+			Exception exception = assertThrows(AlmacenException.class, () -> {
+				categoria.agregarNodo(nodo,categoria);
+		    });
+		}
+		else
+		{
+			categoria.agregarNodo(nodo, nuevaCategoria);
+			Categoria estaCategoria = (Categoria) categoria.darNodos().get(0);
+			assertEquals(estaCategoria.darNodos().size(),3);
+		}
 		
 		}
 	
-	@Test
-	public void testBuscarNodo() {
+	@ParameterizedTest
+	@ValueSource(strings= {"1","11"})
+	public void testBuscarNodo(String identificador) {
 		
-		NodoAlmacen buscada = categoria.buscarNodo(nuevaCategoria.darIdentificador());
-		assertEquals(buscada,nuevaCategoria);
+		NodoAlmacen nodo = categoria.buscarNodo(identificador);
+		
+		if (identificador.equals("1"))
+		{
+			assertEquals(nodo,categoria);
+		}
+		else
+		{
+			assertNotEquals(nodo,categoria);
+		}
 		
 	}
 	
 	@Test
 	public void testDarValorVentas() {
 		
-		fail("Not yet implemented");
+		double valor = categoria.darValorVentas();
+		assertNotNull(valor);
+		
 	}
 	
 	@Test
 	public void testEliminarNodo() {
 		
-		categoria.eliminarNodo(nuevaCategoria.darIdentificador());
-		assertFalse(categoria.darNodos().contains(nuevaCategoria));
+		NodoAlmacen NodoEliminado = categoria.darNodos().get(1);
+		categoria.eliminarNodo(NodoEliminado.darIdentificador());
+		assertFalse(categoria.darNodos().contains(NodoEliminado));
 		
 	}
 	
-	@Test
-	public void testBuscarProducto() {
+	@ParameterizedTest
+	@ValueSource(strings = {"0","7704791121"})
+	public void testBuscarProducto(String codigo) {
 		
-		fail("Not yet implemented");
+		Producto producto = categoria.buscarProducto(codigo);
+		
+		if (codigo.equals("0"))
+		{
+			assertNull(producto);
+		}
+		else
+		{
+			assertNotNull(producto);
+		}
 	}
 	
-	@Test
-	public void testBuscarPadre() {
+	@ParameterizedTest
+	@ValueSource(strings = {"0","11"})
+	public void testBuscarPadre(String identificador) {
 		
-		Categoria padre = categoria.buscarPadre(nuevaCategoria.darIdentificador());
-		assertEquals(categoria,padre);
+		Categoria padre = categoria.buscarPadre(identificador);
+		
+		if (identificador.equals("11"))
+		{
+			assertEquals(categoria,padre);
+		}
+		else
+		{
+			assertNull(padre);
+		}
 		
 	}
 	
-	@Test
+	/*@Test
 	public void testDarProductos() {
-		fail("Not yet implemented");
-	}
+		
+		NodoAlmacen nodo = categoria.darNodos().get(0);
+		assertNotNull(categoria.darProductos(nodo.darProductos());
+		
+	}*/
 	
 	@Test
 	public void testDarMarcas() {
-		fail("Not yet implemented");
+		
+		assertNotNull(categoria.darMarcas());
 	}
 	
 	@Test
 	public void testDarPreorden() {
-		fail("Not yet implemented");
+		
+		assertNotEquals(0,categoria.darPreorden().size());
 	}
 	
 	@Test
 	public void testDarPosorden() {
-		fail("Not yet implemented");
+		
+		assertNotEquals(0,categoria.darPosorden().size());
+		
 	}
 }
