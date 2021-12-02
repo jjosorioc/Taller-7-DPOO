@@ -180,13 +180,13 @@ class PruebasCategoria {
 		
 	}
 	
-	/*@Test
+	@Test
 	public void testDarProductos() {
 		
 		NodoAlmacen nodo = categoria.darNodos().get(0);
-		assertNotNull(categoria.darProductos(nodo.darProductos());
+		categoria.darProductos(nodo.darProductos());
 		
-	}*/
+	}
 	
 	@Test
 	public void testDarMarcas() {
