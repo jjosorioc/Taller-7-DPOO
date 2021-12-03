@@ -25,6 +25,7 @@ class PruebasDeAlmacen {
 	@BeforeEach
 	public void setUp() throws Exception
 	{
+
 		almacenVacio = new Almacen(new File("./data/empty.txt"));
 		almacenCompleto = new Almacen(new File("./data/datos.txt"));
 	}
@@ -101,14 +102,6 @@ class PruebasDeAlmacen {
 	@Test
 	public void agregarProducto()
 	{
-//		try {
-//			almacenVacio.agregarNodo("Cupi2", "Marca","nuevoNodo", "nuevoNodo");
-//			almacenVacio.agregarProducto("nuevoNodo", "nuevoNodo", "nuevoNodo", "nuevoNodo", 0);
-//			assertTrue(almacenVacio.buscarNodo("nuevoNodo").darProductos().isEmpty() == false);
-//		} catch (AlmacenException e) 
-//		{
-//			fail("No se pudo agregar el producto al almacen vacío!");
-//		} aiuda
 		
 		try {
 			almacenCompleto.agregarProducto("1112", "123", "producto", "", 700);
@@ -127,5 +120,13 @@ class PruebasDeAlmacen {
 		}
 	}
 	
+	@Test
+	public void eliminarProducto()
+	{
+		List listaAntes = almacenCompleto.buscarNodo("1122").darProductos();
+		almacenCompleto.eliminarProducto("30999801");
+		List listaDespues = almacenCompleto.buscarNodo("1122").darProductos();
+		assertTrue(listaDespues.size()+ 1 ==listaAntes.size());
+	}
 
 }
